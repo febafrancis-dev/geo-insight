@@ -8,24 +8,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useApiResource } from "../../../hooks/useApiResource";
 import AnalyticsChartCard from "./AnalyticsChartCard";
-import { regionalActivity } from "../data/analyticsData";
 import type { RegionalActivity } from "../types/analytics";
 
-interface RegionalDistributionChartProps {
-  data?: RegionalActivity[];
-}
-
-function RegionalDistributionChart({
-  data = regionalActivity,
-}: RegionalDistributionChartProps) {
-  const isEmpty = data.length === 0;
+function RegionalDistributionChart() {
+  const { data, error, isLoading } = useApiResource<RegionalActivity[]>(
+    "/analytics/regional-distribution",
+    [],
+  );
+  const isEmpty = !isLoading && !error && data.length === 0;
 
   return (
     <AnalyticsChartCard
       title="Regional Distribution"
       description="Tracked location activity across regions"
       isEmpty={isEmpty}
+      isLoading={isLoading}
+      error={error}
     >
       {!isEmpty && (
         <div className="h-72 min-w-0 w-full sm:h-80">

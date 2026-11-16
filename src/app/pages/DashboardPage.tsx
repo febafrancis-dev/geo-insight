@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import DashboardSummaryCards from "../../features/dashboard/components/DashboardSummaryCards";
+import AiAssistant from "../../features/ai/components/AiAssistant";
 import SavedLocationsPage from "./SavedLocationsPage";
 import type { Location } from "../../features/locations/types/location";
 
@@ -10,6 +11,9 @@ const ExploreMapPage = lazy(() => import("./ExploreMapPage"));
 interface DashboardPageProps {
   searchQuery: string;
   onSearchQueryChange: (searchQuery: string) => void;
+  locations: readonly Location[];
+  locationsLoading: boolean;
+  locationsError: string | null;
   savedLocations: readonly Location[];
   savedLocationIds: ReadonlySet<string>;
   onToggleSavedLocation: (locationId: string) => void;
@@ -138,6 +142,9 @@ function ExploreMapSectionFallback() {
 function DashboardPage({
   searchQuery,
   onSearchQueryChange,
+  locations,
+  locationsLoading,
+  locationsError,
   savedLocations,
   savedLocationIds,
   onToggleSavedLocation,
@@ -159,8 +166,14 @@ function DashboardPage({
           </p>
         </header>
 
-        <DashboardSummaryCards savedLocationCount={savedLocations.length} />
+        <DashboardSummaryCards
+          locations={locations}
+          isLoading={locationsLoading}
+          error={locationsError}
+          savedLocationCount={savedLocations.length}
+        />
       </section>
+      <AiAssistant />
       <DeferredSection
         id="analytics"
         className="mt-8 min-w-0"
@@ -176,6 +189,7 @@ function DashboardPage({
         <ExploreMapPage
           searchQuery={searchQuery}
           onSearchQueryChange={onSearchQueryChange}
+          allLocations={locations}
           savedLocationIds={savedLocationIds}
           onToggleSavedLocation={onToggleSavedLocation}
         />

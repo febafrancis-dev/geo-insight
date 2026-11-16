@@ -10,6 +10,7 @@ interface DashboardLayoutProps {
 
 const dashboardSections: readonly DashboardSection[] = [
   "overview",
+  "ai-insights",
   "analytics",
   "explore-map",
   "saved-locations",
@@ -17,6 +18,7 @@ const dashboardSections: readonly DashboardSection[] = [
 
 const sectionTitles: Record<DashboardSection, string> = {
   overview: "Overview",
+  "ai-insights": "AI Insights",
   analytics: "Analytics",
   "explore-map": "Explore Map",
   "saved-locations": "Saved Locations",

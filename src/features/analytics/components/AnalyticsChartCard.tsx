@@ -5,6 +5,8 @@ interface AnalyticsChartCardProps {
   title: string;
   description: string;
   isEmpty: boolean;
+  isLoading: boolean;
+  error: string | null;
   children: ReactNode;
 }
 
@@ -12,6 +14,8 @@ function AnalyticsChartCard({
   title,
   description,
   isEmpty,
+  isLoading,
+  error,
   children,
 }: AnalyticsChartCardProps) {
   const titleId = useId();
@@ -38,7 +42,21 @@ function AnalyticsChartCard({
         </p>
       </div>
 
-      {isEmpty ? (
+      {isLoading ? (
+        <div
+          role="status"
+          className="flex min-h-72 items-center justify-center rounded-lg bg-slate-50 text-sm text-slate-500"
+        >
+          Loading chart data…
+        </div>
+      ) : error ? (
+        <div
+          role="alert"
+          className="flex min-h-72 items-center justify-center rounded-lg bg-red-50 px-4 text-center text-sm text-red-700"
+        >
+          Could not load chart data: {error}
+        </div>
+      ) : isEmpty ? (
         <div
           role="status"
           className="flex min-h-72 items-center justify-center rounded-lg bg-slate-50 text-sm text-slate-500"

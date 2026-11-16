@@ -32,6 +32,35 @@ describe("useSavedLocations", () => {
     ]);
   });
 
+  it("preserves saved IDs until API locations finish loading", () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(["london", "unknown-location"]),
+    );
+    const { result, rerender } = renderHook(
+      ({ locations, isReady }) => useSavedLocations(locations, isReady),
+      { initialProps: { locations: sampleLocations.slice(0, 0), isReady: false } },
+    );
+
+    expect([...result.current.savedLocationIds]).toEqual([
+      "london",
+      "unknown-location",
+    ]);
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
+      JSON.stringify(["london", "unknown-location"]),
+    );
+
+    rerender({ locations: sampleLocations, isReady: true });
+
+    expect([...result.current.savedLocationIds]).toEqual(["london"]);
+    expect(result.current.savedLocations.map(({ id }) => id)).toEqual([
+      "london",
+    ]);
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe(
+      JSON.stringify(["london"]),
+    );
+  });
+
   it("ignores invalid and unknown saved location IDs", () => {
     window.localStorage.setItem(
       STORAGE_KEY,

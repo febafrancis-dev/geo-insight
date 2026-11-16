@@ -6,18 +6,21 @@ import {
   Map,
   MapPinned,
   Settings,
+  Sparkles,
   X,
 } from "lucide-react";
 import type { RefObject } from "react";
 
 export type DashboardSection =
   | "overview"
+  | "ai-insights"
   | "explore-map"
   | "analytics"
   | "saved-locations";
 
 const navigationItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "ai-insights", label: "AI Insights", icon: Sparkles },
   { id: "analytics", label: "Analytics", icon: ChartNoAxesCombined },
   { id: "explore-map", label: "Explore Map", icon: Map },
   { id: "saved-locations", label: "Saved Locations", icon: Bookmark },

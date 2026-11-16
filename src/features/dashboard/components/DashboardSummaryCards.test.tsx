@@ -17,7 +17,14 @@ function getStatValue(title: string, value: string) {
 
 describe("DashboardSummaryCards", () => {
   it("displays the total count derived from sample locations", () => {
-    render(<DashboardSummaryCards savedLocationCount={0} />);
+    render(
+      <DashboardSummaryCards
+        locations={sampleLocations}
+        isLoading={false}
+        error={null}
+        savedLocationCount={0}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Total Locations" }),
@@ -32,7 +39,14 @@ describe("DashboardSummaryCards", () => {
       sampleLocations.map(({ region }) => region),
     ).size;
 
-    render(<DashboardSummaryCards savedLocationCount={0} />);
+    render(
+      <DashboardSummaryCards
+        locations={sampleLocations}
+        isLoading={false}
+        error={null}
+        savedLocationCount={0}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Active Regions" }),
@@ -48,7 +62,14 @@ describe("DashboardSummaryCards", () => {
       0,
     );
 
-    render(<DashboardSummaryCards savedLocationCount={0} />);
+    render(
+      <DashboardSummaryCards
+        locations={sampleLocations}
+        isLoading={false}
+        error={null}
+        savedLocationCount={0}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Total Activity" }),
@@ -59,7 +80,14 @@ describe("DashboardSummaryCards", () => {
   });
 
   it("displays the saved location count passed as a prop", () => {
-    render(<DashboardSummaryCards savedLocationCount={3} />);
+    render(
+      <DashboardSummaryCards
+        locations={sampleLocations}
+        isLoading={false}
+        error={null}
+        savedLocationCount={3}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Saved Locations" }),
@@ -69,12 +97,24 @@ describe("DashboardSummaryCards", () => {
 
   it("updates the saved location count when rerendered with a new value", () => {
     const { rerender } = render(
-      <DashboardSummaryCards savedLocationCount={2} />,
+      <DashboardSummaryCards
+        locations={sampleLocations}
+        isLoading={false}
+        error={null}
+        savedLocationCount={2}
+      />,
     );
 
     expect(getStatValue("Saved Locations", "2")).toBeInTheDocument();
 
-    rerender(<DashboardSummaryCards savedLocationCount={5} />);
+    rerender(
+      <DashboardSummaryCards
+        locations={sampleLocations}
+        isLoading={false}
+        error={null}
+        savedLocationCount={5}
+      />,
+    );
 
     expect(getStatValue("Saved Locations", "5")).toBeInTheDocument();
     expect(screen.queryByText("2")).not.toBeInTheDocument();

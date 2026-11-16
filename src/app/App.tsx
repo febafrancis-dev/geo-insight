@@ -1,17 +1,21 @@
 import { useState } from "react";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
-import { sampleLocations } from "../features/locations/data/locations";
+import { useLocations } from "../features/locations/hooks/useLocations";
 import useSavedLocations from "../features/locations/hooks/useSavedLocations";
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("");
+  const locationsRequest = useLocations();
   const {
     savedLocations,
     savedLocationIds,
     toggleSavedLocation,
     removeSavedLocation,
-  } = useSavedLocations(sampleLocations);
+  } = useSavedLocations(
+    locationsRequest.data,
+    !locationsRequest.isLoading && !locationsRequest.error,
+  );
 
   return (
     <DashboardLayout
@@ -21,6 +25,9 @@ function App() {
       <DashboardPage
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
+        locations={locationsRequest.data}
+        locationsLoading={locationsRequest.isLoading}
+        locationsError={locationsRequest.error}
         savedLocations={savedLocations}
         savedLocationIds={savedLocationIds}
         onToggleSavedLocation={toggleSavedLocation}

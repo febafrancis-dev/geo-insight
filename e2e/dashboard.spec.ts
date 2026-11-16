@@ -159,3 +159,42 @@ test("closes the mobile navigation drawer after selecting a section", async ({
   await expect(page).toHaveURL(/#analytics$/);
   await expect(page.getByRole("region", { name: "Analytics" })).toBeVisible();
 });
+
+test("asks the AI Assistant and displays a mocked insight", async ({ page }) => {
+  await page.route("**/api/ai/insights", async (route) => {
+    expect(route.request().method()).toBe("POST");
+    expect(route.request().postDataJSON()).toEqual({
+      question: "Which region has the highest activity?",
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        answer:
+          "North America has the highest regional distribution value at 680.",
+      }),
+    });
+  });
+
+  await page.goto("/");
+  await page
+    .getByRole("navigation", { name: "Primary navigation" })
+    .getByRole("link", { name: "AI Insights" })
+    .click();
+
+  await expect(page).toHaveURL(/#ai-insights$/);
+  await expect(
+    page.getByRole("heading", { name: "AI Location Insights" }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Which region has the highest activity?" })
+    .click();
+  await page.getByRole("button", { name: "Ask AI" }).click();
+
+  await expect(
+    page.getByText(
+      "North America has the highest regional distribution value at 680.",
+    ),
+  ).toBeVisible();
+});

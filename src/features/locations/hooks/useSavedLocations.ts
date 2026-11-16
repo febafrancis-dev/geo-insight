@@ -3,7 +3,10 @@ import type { Location } from "../types/location";
 
 const STORAGE_KEY = "geo-insight:saved-location-ids";
 
-function readSavedLocationIds(knownLocationIds: ReadonlySet<string>): string[] {
+function readSavedLocationIds(
+  knownLocationIds: ReadonlySet<string>,
+  isReady: boolean,
+): string[] {
   if (typeof window === "undefined") {
     return [];
   }
@@ -23,9 +26,11 @@ function readSavedLocationIds(knownLocationIds: ReadonlySet<string>): string[] {
     const stringIds = parsedValue.filter(
       (value: unknown): value is string => typeof value === "string",
     );
-    const validIds = stringIds.filter((id) => knownLocationIds.has(id));
+    const validIds = isReady
+      ? stringIds.filter((id) => knownLocationIds.has(id))
+      : stringIds;
 
-    if (validIds.length !== parsedValue.length) {
+    if (isReady && validIds.length !== parsedValue.length) {
       console.warn("Invalid saved location IDs were ignored.");
     }
 
@@ -45,6 +50,7 @@ interface UseSavedLocationsResult {
 
 function useSavedLocations(
   locations: readonly Location[],
+  isReady = true,
 ): UseSavedLocationsResult {
   const knownLocationIds = useMemo(
     () => new Set(locations.map((location) => location.id)),
@@ -52,14 +58,17 @@ function useSavedLocations(
   );
   const [storedSavedLocationIds, setStoredSavedLocationIds] = useState<
     string[]
-  >(() => readSavedLocationIds(knownLocationIds));
+  >(() => readSavedLocationIds(knownLocationIds, isReady));
   const validSavedLocationIds = useMemo(
-    () => storedSavedLocationIds.filter((id) => knownLocationIds.has(id)),
-    [knownLocationIds, storedSavedLocationIds],
+    () =>
+      isReady
+        ? storedSavedLocationIds.filter((id) => knownLocationIds.has(id))
+        : storedSavedLocationIds,
+    [isReady, knownLocationIds, storedSavedLocationIds],
   );
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || !isReady) {
       return;
     }
 
@@ -71,7 +80,7 @@ function useSavedLocations(
     } catch (error) {
       console.warn("Unable to save locations to localStorage.", error);
     }
-  }, [validSavedLocationIds]);
+  }, [isReady, validSavedLocationIds]);
 
   const savedLocationIds = useMemo(
     () => new Set(validSavedLocationIds),
@@ -84,6 +93,10 @@ function useSavedLocations(
 
   const toggleSavedLocation = useCallback(
     (locationId: string) => {
+      if (!isReady) {
+        return;
+      }
+
       if (!knownLocationIds.has(locationId)) {
         console.warn("Cannot save an unknown location.");
         return;
@@ -95,7 +108,7 @@ function useSavedLocations(
           : [...currentIds, locationId],
       );
     },
-    [knownLocationIds],
+    [isReady, knownLocationIds],
   );
   const removeSavedLocation = useCallback((locationId: string) => {
     setStoredSavedLocationIds((currentIds) =>

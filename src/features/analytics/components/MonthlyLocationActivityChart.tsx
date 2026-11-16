@@ -8,24 +8,24 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useApiResource } from "../../../hooks/useApiResource";
 import AnalyticsChartCard from "./AnalyticsChartCard";
-import { monthlyLocationActivity } from "../data/analyticsData";
 import type { MonthlyLocationActivity } from "../types/analytics";
 
-interface MonthlyLocationActivityChartProps {
-  data?: MonthlyLocationActivity[];
-}
-
-function MonthlyLocationActivityChart({
-  data = monthlyLocationActivity,
-}: MonthlyLocationActivityChartProps) {
-  const isEmpty = data.length === 0;
+function MonthlyLocationActivityChart() {
+  const { data, error, isLoading } = useApiResource<MonthlyLocationActivity[]>(
+    "/analytics/monthly-activity",
+    [],
+  );
+  const isEmpty = !isLoading && !error && data.length === 0;
 
   return (
     <AnalyticsChartCard
       title="Monthly Location Activity"
       description="Monthly locations tracked over the last six months"
       isEmpty={isEmpty}
+      isLoading={isLoading}
+      error={error}
     >
       {!isEmpty && (
         <div className="h-72 min-w-0 w-full sm:h-80">

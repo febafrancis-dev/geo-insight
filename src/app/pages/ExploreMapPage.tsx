@@ -2,16 +2,15 @@ import { useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import LocationFilterControls from "../../features/locations/components/LocationFilterControls";
 import LocationMap from "../../features/locations/components/LocationMap";
-import { sampleLocations } from "../../features/locations/data/locations";
+import { useLocations } from "../../features/locations/hooks/useLocations";
+import type { Location } from "../../features/locations/types/location";
 import type { LocationFilters } from "../../features/locations/types/location";
-import {
-  ALL_REGIONS,
-  filterLocations,
-} from "../../features/locations/utils/filterLocations";
+import { ALL_REGIONS } from "../../features/locations/utils/filterLocations";
 
 interface ExploreMapPageProps {
   searchQuery: string;
   onSearchQueryChange: (searchQuery: string) => void;
+  allLocations: readonly Location[];
   savedLocationIds: ReadonlySet<string>;
   onToggleSavedLocation: (locationId: string) => void;
 }
@@ -24,6 +23,7 @@ const initialFilters: Pick<LocationFilters, "region" | "minimumActivity"> = {
 function ExploreMapPage({
   searchQuery,
   onSearchQueryChange,
+  allLocations,
   savedLocationIds,
   onToggleSavedLocation,
 }: ExploreMapPageProps) {
@@ -32,14 +32,23 @@ function ExploreMapPage({
   const regions = useMemo(
     () =>
       Array.from(
-        new Set(sampleLocations.map((location) => location.region)),
+        new Set(allLocations.map((location) => location.region)),
       ).sort((first, second) => first.localeCompare(second)),
-    [],
+    [allLocations],
   );
-  const matchingLocations = useMemo(
-    () => filterLocations(sampleLocations, { ...filters, searchQuery }),
-    [filters, searchQuery],
-  );
+  const locationsRequest = useLocations({
+    searchQuery,
+    region: filters.region === ALL_REGIONS ? undefined : filters.region,
+    minimumActivity: filters.minimumActivity,
+  });
+  const matchingLocations = locationsRequest.data;
+  const resultLabel = locationsRequest.isLoading
+    ? "Loading locations…"
+    : locationsRequest.error
+      ? "Locations unavailable"
+      : `${matchingLocations.length} ${
+          matchingLocations.length === 1 ? "location" : "locations"
+        } found`;
 
   return (
     <section
@@ -65,8 +74,7 @@ function ExploreMapPage({
           aria-atomic="true"
         >
           <MapPin size={16} aria-hidden="true" className="text-blue-600" />
-          {matchingLocations.length}{" "}
-          {matchingLocations.length === 1 ? "location" : "locations"} found
+          {resultLabel}
         </p>
       </div>
       <div className="space-y-4">
@@ -87,11 +95,24 @@ function ExploreMapPage({
             onSearchQueryChange("");
           }}
         />
-        <LocationMap
-          locations={matchingLocations}
-          savedLocationIds={savedLocationIds}
-          onToggleSavedLocation={onToggleSavedLocation}
-        />
+        {locationsRequest.error ? (
+          <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            Could not load locations: {locationsRequest.error}
+          </p>
+        ) : locationsRequest.isLoading ? (
+          <p
+            role="status"
+            className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-600"
+          >
+            Loading locations…
+          </p>
+        ) : (
+          <LocationMap
+            locations={matchingLocations}
+            savedLocationIds={savedLocationIds}
+            onToggleSavedLocation={onToggleSavedLocation}
+          />
+        )}
       </div>
     </section>
   );
